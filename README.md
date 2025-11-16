@@ -1,27 +1,29 @@
-An **nginx Deployment with 3 replicas** and a **NodePort Service** you can hit from local **Minikube**.
+An **pritamworld/hellodocker:latest Deployment with 3 replicas** and a **NodePort Service** you can hit from local **Minikube**.
 
-### 1) Manifest (recommended)
+Note: Replace ```pritamworld/hellodocker:latest``` with your own docker hub image ```<dockerusername>/hellodocker:latest```
 
-Save as `nginx-deploy.yaml`:
+### 1) Manifest
+
+Save as `hellodocker-deploy.yaml`:
 
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: hellodocker
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: nginx
+      app: hellodocker
   template:
     metadata:
       labels:
-        app: nginx
+        app: hellodocker
     spec:
       containers:
-        - name: nginx
-          image: nginx:1.25-alpine
+        - name: hellodocker
+          image: pritamworld/hellodocker:latest
           ports:
             - containerPort: 80
           readinessProbe:
@@ -37,17 +39,17 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 10
 ```
-Save as `nginx-service.yaml`:
+Save as `hellodocker-service.yaml`:
 
 ```yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-nodeport
+  name: hellodocker-nodeport
 spec:
   type: NodePort
   selector:
-    app: nginx
+    app: hellodocker
   ports:
     - name: http
       port: 80
@@ -58,18 +60,18 @@ spec:
 Apply & verify:
 
 ```bash
-kubectl apply -f nginx-deploy.yaml
-kubectl apply -f nginx-service.yaml
-kubectl rollout status deployment/nginx
-kubectl get pods -l app=nginx -o wide
-kubectl get svc nginx-nodeport
+kubectl apply -f hellodocker-deploy.yaml
+kubectl apply -f hellodocker-service.yaml
+kubectl rollout status deployment/hellodocker
+kubectl get pods -l app=hellodocker -o wide
+kubectl get svc hellodocker-nodeport
 ```
 
 Access it from Minikube:
 
 ```bash
 # Easiest (prints a URL and opens a tunnel if needed):
-minikube service nginx-nodeport --url
+minikube service hellodocker-nodeport --url
 
 # Or hit the NodePort directly:
 MINIKUBE_IP=$(minikube ip)
@@ -78,25 +80,12 @@ curl http://$MINIKUBE_IP:30080
 
 ---
 
-### 2) One-liners (imperative alternative)
-
-```bash
-kubectl create deployment nginx --image=nginx:1.25-alpine --replicas=3
-kubectl expose deployment nginx --type=NodePort --port=80 --name=nginx-nodeport
-minikube service nginx-nodeport --url
-```
-
-> Note: The CLI won’t set a fixed `nodePort`; Kubernetes will auto-assign one. Use the YAML above if you want a specific port like `30080`.
-
----
-
 ### Cleanup
 
 ```bash
-kubectl delete -f nginx-deploy.yaml
-kubectl delete -f nginx-service.yaml
+kubectl delete -f hellodocker-deploy.yaml
+kubectl delete -f hellodocker-service.yaml
 # or, if you used the one-liners:
-kubectl delete svc nginx-nodeport
-kubectl delete deploy nginx
+kubectl delete svc hellodocker-nodeport
+kubectl delete deploy hellodocker
 ```
-
