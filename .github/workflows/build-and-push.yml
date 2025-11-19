@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./lab11-Docker
-          file: ./Dockerfile
+          file: Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest
